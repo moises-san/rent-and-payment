@@ -1,4 +1,3 @@
-require 'json'
 require_relative 'constant/util_constants'
 require_relative 'util/rent_utils'
 
@@ -8,7 +7,7 @@ class PaymentInfo
     def initialize(rent)
         @rent = RentUtils.validate_rent(rent)
         @payment_date_keys = []
-        @payment_date_map = get_payment_date_map
+        @payment_date_map = build_payment_date_map
         @is_adjusted = false
     end
 
@@ -37,9 +36,7 @@ class PaymentInfo
         rent_change = RentUtils.validate_rent_change(rent_change)
 
         @payment_date_map.each do |payment, values|
-            if payment >= rent_change[:effective_date]
-                values[:amount] = rent_change[:amount]
-            end
+            values[:amount] = rent_change[:amount] if payment >= rent_change[:effective_date]
         end
 
         @is_adjusted = true
@@ -48,20 +45,20 @@ class PaymentInfo
 
     def add_or_change_payment_method(payment_method)
         @rent[:method] = RentUtils.validate_payment_method(payment_method)
-        @payment_date_map = @payment_date_map.map { |k, v| [k, get_payment_method_entry(k, v[:amount])] }.to_h
+        @payment_date_map = @payment_date_map.map { |k, v| [k, build_method_entry(k, v[:amount])] }.to_h
         get_payment_dates
     end
 
     private
 
-    def get_payment_date_map
+    def build_payment_date_map
         date_map = {}
 
         months = RENT_FREQUENCY[@rent[:frequency]][:months]
         days = RENT_FREQUENCY[@rent[:frequency]][:days]
         i = 0
         while (current_date = (@rent[:start_date] >> (i*months)) + (i*days)) < @rent[:end_date]
-            date_map[current_date] = get_payment_method_entry(current_date, @rent[:amount])
+            date_map[current_date] = build_method_entry(current_date, @rent[:amount])
             @payment_date_keys.append(current_date)
             i += 1
         end
@@ -69,7 +66,7 @@ class PaymentInfo
         date_map
     end
 
-    def get_payment_method_entry(base_date, amount)
+    def build_method_entry(base_date, amount)
         {
             payment_date: base_date - PAYMENT_METHOD[@rent[:method]],
             amount: amount,
