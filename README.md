@@ -43,8 +43,7 @@ Instead of keeping the logic inside the entity class, a service class was create
 \
 Note, however, that the methods are statically called. The service class need not be instantiated before calling the functions. In real applications, an instance is first instantiated (usually, in a controller class for backend projects) before performing the functions. \
 \
-This separation of service class requires that the corresponding object be passed so that it may be modified accordingly. It mimics backend projects, where we get the necessary detail (i.e. primary key) of a record, fetch the object from the database, and modify according to the user input. \
-
+This separation of service class requires that the corresponding object be passed so that it may be modified accordingly. It mimics backend projects, where we get the necessary detail (i.e. primary key) of a record, fetch the object from the database, and modify according to the user input.
 
 In this implementation, we assumed the following:
 1. **_User input always follows the correct format._** \
